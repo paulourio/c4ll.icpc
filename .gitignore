@@ -1,7 +1,10 @@
-*
-!*.c
-!*.cpp
-!Makefile
-!in[0-9]*
-!an[0-9]*
+a.out
+*.o
+*.out
+out
+o
+*~
+*.swp
+*.go
 !.gitignore
+
