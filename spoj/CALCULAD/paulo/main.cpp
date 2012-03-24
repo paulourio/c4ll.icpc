@@ -1,4 +1,3 @@
-#include <iostream>
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -12,7 +11,7 @@ double memory[26];
 #define ISVAR(chr)	'a' <= (chr) && (chr) <= 'z'
 #define ISPAR(chr)	((chr) == '(' || (chr) == ')')
 #define ISOP(c)		((c) == '*' || (c) == '/' || (c) == '+' || (c) == '-')
-char buffer[5000001];
+char buffer[9000001];
 
 int prec(int op)
 {
@@ -79,11 +78,6 @@ double eval(char *ptr)
 	while (!ops.empty())
 		desempilhar();
 
-/*	cerr << "Posfixo: " ;
-	for (list<char *>::iterator i=pfix.begin(); i!=pfix.end(); i++)
-		cerr << *(*i);
-	cerr << endl;
-*/
 	stack<double> pilha;
 	while (!pfix.empty()) {
 		char *t = pfix.front();
@@ -99,7 +93,6 @@ double eval(char *ptr)
 			case '+': r = a + b; break;
 			case '-': r = a - b; break;
 			}
-			cerr << "Resultado " << a << " " << *t << " " << b << " = " << r << endl;
 			pilha.push(r);
 			continue;
 		}
