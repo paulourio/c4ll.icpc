@@ -1,0 +1,7 @@
+*
+!*.c
+!*.cpp
+!Makefile
+!in[0-9]*
+!an[0-9]*
+!.gitignore
