@@ -7,7 +7,7 @@ run: main.go
 	./main.go < in01 > main.out
 
 valgrind: main.go
-	valgrind ./main.go < in01
+	valgrind --leak-check=full ./main.go < in01
 
 debug: main.go
 	./main.go < in01

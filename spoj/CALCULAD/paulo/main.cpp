@@ -11,7 +11,14 @@ double memory[26];
 #define ISVAR(chr)	'a' <= (chr) && (chr) <= 'z'
 #define ISPAR(chr)	((chr) == '(' || (chr) == ')')
 #define ISOP(c)		((c) == '*' || (c) == '/' || (c) == '+' || (c) == '-')
+char offset = 0; /* workaround for buffer[-1] */
 char buffer[9000001];
+
+#ifdef DEBUG
+#define err(...)	fprintf(stderr, __VA_ARGS__)
+#else
+#define err(...)
+#endif
 
 int prec(int op)
 {
@@ -21,7 +28,7 @@ int prec(int op)
 	case '+': 
 	case '-': return 1;
 	}
-	return -100;
+	return 6; /* parentesis? */
 }
 
 enum {VARIAVEL, NUMERO, OPERADOR, PARENTESE};
@@ -45,6 +52,7 @@ void desempilhar(void)
 
 double eval(char *ptr)
 {
+	err("exp: %s\n", buffer);
 	pfix.clear();
 	while (*ptr != 0) {
 		switch(token((int) *ptr)) {
@@ -52,7 +60,8 @@ double eval(char *ptr)
 			pfix.push_back(ptr++);
 			break;
 		case NUMERO: 
-			pfix.push_back(ptr);
+		ler_numero:
+			pfix.push_back(ptr++);
 			while (ISNUM(*ptr)) ptr++;
 			break;
 		case PARENTESE:
@@ -66,24 +75,42 @@ double eval(char *ptr)
 			ptr++;
 			break;
 		case OPERADOR:
+			if (ptr == buffer ||
+					( (ISOP(*(ptr-1)) || *(ptr-1) == '(') 
+					&& *(ptr + 1) != '(') ) {
+				err("WE DO GOTO BECAUSE WE CAN! (ptr == %c)\n",*ptr);
+				if (ISNUM(*(ptr + 1))) {
+					goto ler_numero;
+				} else {
+					pfix.push_back(ptr++);
+					ptr++;					
+				}
+				continue;
+			}
 			while (!ops.empty()) {
 				char *top = ops.top();
-				if (prec(*top) - prec(*ptr) < 0)
+				if (ISPAR(*top) || prec(*top) - prec(*ptr) < 0)
 					break;
 				desempilhar();
 			}
 			ops.push(ptr++);
+			break;
 		}
 	}
 	while (!ops.empty())
 		desempilhar();
 
+
 	stack<double> pilha;
 	while (!pfix.empty()) {
 		char *t = pfix.front();
 		pfix.pop_front();
+		err("Processing %c (t==buffer? %d)\n", *t, t==buffer);
 
-		if (ISOP(*t)) {
+		if (ISOP(*t) 
+				&& t != buffer 
+				&& !ISOP(*(t-1)) && (*(t-1) != '(')) {
+			err("...\n");
 			double b = pilha.top(); pilha.pop();
 			double a = pilha.top(); pilha.pop();
 			double r;
@@ -93,14 +120,27 @@ double eval(char *ptr)
 			case '+': r = a + b; break;
 			case '-': r = a - b; break;
 			}
+			err("eval %lf %c %lf = %lf\n", a, *t, b, r);
 			pilha.push(r);
 			continue;
 		}
-		if (ISVAR(*t)) 
-			pilha.push( (double) MEMORY(*t) );
-		else if (ISNUM(*t)) 
-			pilha.push( (double) strtoul(t, NULL, 10) );
-
+		if (ISOP(*t) && ISVAR(*(t+1))) {
+			double v = MEMORY( *(t+1) );
+			if (*t == '-') 
+				v *= -1;
+			err("With signal: %c%c (%lf)\n", *t, *(t+1), v);
+			pilha.push( v );
+			continue;
+		}
+		if (ISVAR(*t)) {
+			double v = MEMORY(*t);
+			err("Push variable: %c (%lf)\n", *t, v);
+			pilha.push( v );
+		} else {
+			double v = (double) strtol(t, NULL, 10);
+			err("Push number: %c (%lf)\n", *t, v);
+			pilha.push( v );
+		}
 	}
 	return pilha.top();
 }
