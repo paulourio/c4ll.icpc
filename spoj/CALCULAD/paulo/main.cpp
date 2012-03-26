@@ -13,7 +13,7 @@ double memory[26];
 #define ISOP(c)		((c) == '*' || (c) == '/' || (c) == '+' || (c) == '-')
 char offset = 0; /* workaround for buffer[-1] */
 char buffer[9000001];
-
+#define DEBUG
 #ifdef DEBUG
 #define err(...)	fprintf(stderr, __VA_ARGS__)
 #else
