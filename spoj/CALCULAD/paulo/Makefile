@@ -9,11 +9,14 @@ run: main.go
 valgrind: main.go
 	valgrind --leak-check=full ./main.go < in01
 
-debug: main.go
+debug: debmain.go
 	./main.go < in01
 
 main.go: main.cpp
 	g++ -Wall main.cpp -o main.go
+
+debmain.go: main.cpp
+	g++ -g -Wall -Wextra -DDEBUG main.cpp -o main.go
 
 clean:
 	$(RM) *.out *.go

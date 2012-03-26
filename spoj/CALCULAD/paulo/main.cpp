@@ -11,9 +11,8 @@ double memory[26];
 #define ISVAR(chr)	'a' <= (chr) && (chr) <= 'z'
 #define ISPAR(chr)	((chr) == '(' || (chr) == ')')
 #define ISOP(c)		((c) == '*' || (c) == '/' || (c) == '+' || (c) == '-')
-char offset = 0; /* workaround for buffer[-1] */
-char buffer[9000001];
-#define DEBUG
+char buffer[6000001];
+
 #ifdef DEBUG
 #define err(...)	fprintf(stderr, __VA_ARGS__)
 #else
@@ -76,10 +75,10 @@ double eval(char *ptr)
 			break;
 		case OPERADOR:
 			if (ptr == buffer ||
-					( (ISOP(*(ptr-1)) || *(ptr-1) == '(') 
-					&& *(ptr + 1) != '(') ) {
-				err("WE DO GOTO BECAUSE WE CAN! (ptr == %c)\n",*ptr);
-				if (ISNUM(*(ptr + 1))) {
+					( (ISOP(ptr[-1]) || ptr[-1] == '(') 
+					&& ptr[1] != '(') ) {
+				err("WE DO GOTO BECAUSE WE CAN! (ptr == %c)\n", *ptr);
+				if (ISNUM(ptr[1])) {
 					goto ler_numero;
 				} else {
 					pfix.push_back(ptr++);
@@ -109,7 +108,7 @@ double eval(char *ptr)
 
 		if (ISOP(*t) 
 				&& t != buffer 
-				&& !ISOP(*(t-1)) && (*(t-1) != '(')) {
+				&& !ISOP(t[-1]) && (t[-1] != '(')) {
 			err("...\n");
 			double b = pilha.top(); pilha.pop();
 			double a = pilha.top(); pilha.pop();
@@ -128,7 +127,7 @@ double eval(char *ptr)
 			double v = MEMORY( *(t+1) );
 			if (*t == '-') 
 				v *= -1;
-			err("With signal: %c%c (%lf)\n", *t, *(t+1), v);
+			err("With signal: %c%c (%lf)\n", t[0], t[1], v);
 			pilha.push( v );
 			continue;
 		}
